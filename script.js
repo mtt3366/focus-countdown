@@ -9,9 +9,12 @@ const startButton = document.getElementById("start-button");
 const resetButton = document.getElementById("reset-button");
 
 // 音频资源初始化
-const soundA = new Audio("sounds/soundA.mp3"); // 随机倒计时结束音
-const soundB = new Audio("sounds/soundB.mp3"); // 10秒倒计时结束音
-const soundC = new Audio("sounds/soundC.mp3"); // 主流程结束音
+const soundA = new Audio("sounds/soundA.mp3");
+soundA.preload = "auto"; // 提示浏览器预加载音频
+const soundB = new Audio("sounds/soundB.mp3");
+soundB.preload = "auto"; // 提示浏览器预加载音频
+const soundC = new Audio("sounds/soundC.mp3");
+soundC.preload = "auto"; // 提示浏览器预加载音频
 
 // 计时器ID存储变量
 let mainTimerId = null;
