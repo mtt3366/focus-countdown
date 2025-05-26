@@ -30,11 +30,6 @@ function getRandomMinutes() {
   return Math.floor(randomMinutes * 60 * 1000); // 转换为毫秒
 }
 
-// 格式化时间显示函数
-function formatTime(hours, minutes, seconds) {
-  return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-}
-
 // 格式化分钟秒显示函数
 function formatMinuteSecond(minutes, seconds) {
   return `${pad(minutes)}:${pad(seconds)}`;
@@ -50,37 +45,27 @@ function startTimers() {
 
   // 计算90分钟后的结束时间
   const endTime = new Date(Date.now() + 90 * 60 * 1000);
-  // console.log("Main endTime obj:", endTime);
-  // console.log("Main endTime ms:", endTime.getTime());
 
   // 启动主计时器（90分钟） - 传递毫秒数
   mainTimerId = countdown(
-    endTime.getTime(), // <--- 修改点：传递毫秒数
+    endTime.getTime(),
     function (ts) {
       // 检查是否已经结束
-      console.log("ts:", ts);
-      console.log("ts.value:", ts.value);
       if (ts.value >= 0) {
         console.log("主流程结束");
-        // 播放结束音
         soundC.play();
-        // 更新显示
         mainTimerDisplay.innerHTML = "流程完成！";
-        // 重置所有状态
         resetAll();
         return;
       }
 
-      // 更新主计时器显示
-      const hours = Math.floor(ts.minutes / 60);
-      const minutes = ts.minutes % 60;
-      const seconds = ts.seconds;
-      mainTimerDisplay.innerHTML = formatTime(hours, minutes, seconds);
+      // 更新主计时器显示 - 只显示总分钟数和秒数
+      const totalMinutes = ts.hours * 60 + ts.minutes;
+      mainTimerDisplay.innerHTML = formatMinuteSecond(totalMinutes, ts.seconds);
     },
-    countdown.HOURS | countdown.MINUTES | countdown.SECONDS
+    countdown.HOURS | countdown.MINUTES | countdown.SECONDS // 保持请求HOURS以便正确计算totalMinutes
   );
 
-  // 立即开始第一个随机循环
   startRandomCycle();
 }
 
@@ -182,15 +167,15 @@ function resetAll() {
 
   // 停止所有计时器
   if (mainTimerId !== null) {
-    clearInterval(mainTimerId); // 恢复使用 clearInterval
+    clearInterval(mainTimerId);
     mainTimerId = null;
   }
   if (randomTimerId !== null) {
-    clearInterval(randomTimerId); // 恢复使用 clearInterval
+    clearInterval(randomTimerId);
     randomTimerId = null;
   }
   if (tenSecondTimerId !== null) {
-    clearInterval(tenSecondTimerId); // 恢复使用 clearInterval
+    clearInterval(tenSecondTimerId);
     tenSecondTimerId = null;
   }
 
@@ -203,7 +188,7 @@ function resetAll() {
   soundC.currentTime = 0;
 
   // 重置界面显示
-  mainTimerDisplay.innerHTML = "90:00:00";
+  mainTimerDisplay.innerHTML = "90:00";
   randomTimerDisplay.innerHTML = "--:--";
   tenSecondTimerDisplay.innerHTML = "10";
 
