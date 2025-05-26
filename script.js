@@ -323,7 +323,7 @@ function loadAndResumeAppState() {
   }
 
   console.log("找到已保存的应用状态: ", loadedState);
-  appState = { ...appState, ...loadedState }; // 合并加载的状态到当前appState
+  appState = { ...appState, ...loadedState };
 
   const now = Date.now();
 
@@ -331,11 +331,14 @@ function loadAndResumeAppState() {
   if (appState.mainTargetEndTime <= now) {
     console.log("主计时器在页面关闭期间已到期。");
     mainTimerDisplay.innerHTML = "流程已在您离开时完成！";
-    soundC.play(); // 可以在这里播放，因为用户是主动打开页面的
+    // 尝试播放 soundC，如果浏览器因无交互而阻止，则静默失败
+    soundC
+      .play()
+      .catch((e) => console.warn("恢复时播放soundC失败 (可能无用户交互):", e));
     clearAppStateFromLocalStorage();
-    resetAllInternals(true); // 更新UI到结束状态
-    startButton.disabled = true; // 确保开始按钮禁用
-    resetButton.disabled = false; // 重置按钮应该可用，以便用户可以开始新的
+    resetAllInternals(true);
+    startButton.disabled = true;
+    resetButton.disabled = false;
     return;
   }
 
@@ -346,31 +349,38 @@ function loadAndResumeAppState() {
   // 根据保存的阶段恢复子计时器
   if (appState.currentCyclePhase === "random" && appState.randomTargetEndTime) {
     if (appState.randomTargetEndTime > now) {
+      // 还在进行中
       console.log("尝试恢复随机间隔计时器...");
       startRandomIntervalTimer(true, appState.randomTargetEndTime);
     } else {
-      console.log("随机间隔在页面关闭期间已到期。启动10秒准备。");
-      soundA.play(); // 随机计时结束，播放声音A
-      startTenSecondPrepTimer(); // 启动下一个阶段
+      // 已过期
+      console.log(
+        "随机间隔在页面关闭期间已到期。不播放声音A，直接启动10秒准备。"
+      );
+      // 不尝试播放 soundA.play();
+      startTenSecondPrepTimer();
     }
   } else if (
     appState.currentCyclePhase === "ten_second" &&
     appState.tenSecondTargetEndTime
   ) {
     if (appState.tenSecondTargetEndTime > now) {
+      // 还在进行中
       console.log("尝试恢复10秒准备计时器...");
       startTenSecondPrepTimer(true, appState.tenSecondTargetEndTime);
     } else {
-      console.log("10秒准备在页面关闭期间已到期。启动随机间隔。");
-      soundB.play(); // 10秒计时结束，播放声音B
-      startRandomIntervalTimer(); // 启动下一个阶段
+      // 已过期
+      console.log(
+        "10秒准备在页面关闭期间已到期。不播放声音B，直接启动随机间隔。"
+      );
+      // 不尝试播放 soundB.play();
+      startRandomIntervalTimer();
     }
   } else {
-    // 如果没有明确的子循环阶段，或者子循环的目标时间无效，则启动新的随机间隔
     console.log("未找到有效子循环阶段或时间，启动新的随机间隔。");
     startRandomIntervalTimer();
   }
-  saveAppStateToLocalStorage(); // 确保恢复后的当前状态被保存
+  saveAppStateToLocalStorage();
 }
 
 // --- 事件监听器 ---
