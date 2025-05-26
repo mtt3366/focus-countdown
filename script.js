@@ -62,7 +62,7 @@ function pad(num) {
 // 工具函数：获取3-5分钟的随机时间（毫秒）
 function getRandomMillisecondsForCycle() {
   const randomMinutes = Math.random() * 2 + 3; // 3-5 分钟
-  return Math.floor(randomMinutes * 60 * 1000); // 转换为毫秒
+  return Math.floor(randomMinutes * 1000); // 转换为毫秒
 }
 
 // 格式化分钟秒显示函数
@@ -162,6 +162,7 @@ function startRandomIntervalTimer(isResuming = false, resumeTargetTime = null) {
     function (ts) {
       if (ts.value >= 0) {
         console.log(`随机间隔计时器 (ID: ${randomTimerId}) 结束。播放声音A。`);
+        soundA.currentTime = 0;
         soundA.play();
         randomTimerDisplay.innerHTML = "--:--";
         if (randomTimerId) {
