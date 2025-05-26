@@ -58,7 +58,9 @@ function startTimers() {
     endTime.getTime(), // <--- 修改点：传递毫秒数
     function (ts) {
       // 检查是否已经结束
-      if (ts.value <= 0) {
+      console.log("ts:", ts);
+      console.log("ts.value:", ts.value);
+      if (ts.value >= 0) {
         console.log("主流程结束");
         // 播放结束音
         soundC.play();
@@ -103,7 +105,7 @@ function startRandomCycle() {
     endTime.getTime(), // <--- 修改点：传递毫秒数
     function (ts) {
       // 检查是否已经结束
-      if (ts.value <= 0) {
+      if (ts.value >= 0) {
         console.log("随机间隔结束，播放声音A");
         // 播放声音A
         soundA.play();
@@ -149,7 +151,7 @@ function startTenSecondWait() {
     endTime.getTime(), // <--- 修改点：传递毫秒数
     function (ts) {
       // 检查是否已经结束
-      if (ts.value <= 0) {
+      if (ts.value >= 0) {
         console.log("10秒准备结束，播放声音B");
 
         // 隐藏10秒计时器卡片
@@ -224,6 +226,3 @@ document.addEventListener("DOMContentLoaded", function () {
   console.log("页面加载完成，初始化应用状态");
   resetAll();
 });
-
-// 立即调用一次重置以确保初始状态正确
-resetAll();
