@@ -23,10 +23,10 @@ function pad(num) {
   return num.toString().padStart(2, "0");
 }
 
-// 工具函数：获取3-5秒的随机时间（毫秒）
+// 工具函数：获取3-5分钟的随机时间（毫秒）
 function getRandomMillisecondsForCycle() {
-  const randomSeconds = Math.random() * 2 + 3; // 3-5 seconds
-  return Math.floor(randomSeconds * 1000); // 转换为毫秒
+  const randomMinutes = Math.random() * 2 + 3; // 3-5 分钟
+  return Math.floor(randomMinutes * 60 * 1000); // 转换为毫秒
 }
 
 // 格式化分钟秒显示函数
@@ -185,8 +185,6 @@ function resetAll() {
   soundA.currentTime = 0;
   soundB.pause();
   soundB.currentTime = 0;
-  soundC.pause();
-  soundC.currentTime = 0;
 
   mainTimerDisplay.innerHTML = "90:00";
   randomTimerDisplay.innerHTML = "--:--";
