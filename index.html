@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>复合倒计时器</title>
+  <!-- 引入Google Fonts的Poppins字体 -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <!-- 链接到样式文件 -->
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <!-- 主容器 -->
+  <div class="app-container">
+    <!-- 应用标题 -->
+    <h1>多功能训练计时器</h1>
+
+    <!-- 计时器显示容器 -->
+    <div class="timers-container">
+      <!-- 主计时器卡片 -->
+      <div class="timer-card">
+        <h3>主流程</h3>
+        <h2 id="main-timer-display">90:00:00</h2>
+      </div>
+
+      <!-- 随机计时器卡片 -->
+      <div class="timer-card">
+        <h3>随机间隔</h3>
+        <h2 id="random-timer-display">--:--</h2>
+      </div>
+
+      <!-- 10秒计时器卡片（初始隐藏） -->
+      <div class="timer-card hidden" id="ten-second-timer-card">
+        <h3>准备</h3>
+        <h2 id="ten-second-timer-display">10</h2>
+      </div>
+    </div>
+
+    <!-- 控制按钮容器 -->
+    <div class="controls-container">
+      <button id="start-button">开始</button>
+      <button id="reset-button" disabled>重置</button>
+    </div>
+  </div>
+
+  <!-- 引入countdown.js库 -->
+  <script src="https://cdn.jsdelivr.net/npm/countdown@2.6.0/countdown.min.js"></script>
+  <!-- 引入本地脚本 -->
+  <script src="script.js"></script>
+</body>
+
+</html>
