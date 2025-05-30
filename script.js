@@ -16,6 +16,90 @@ soundB.preload = "auto"; // 提示浏览器预加载音频
 const soundC = new Audio("sounds/soundC.mp3");
 soundC.preload = "auto"; // 提示浏览器预加载音频
 
+// 桌面通知功能
+let notificationPermission = "default";
+
+// 检查浏览器是否支持通知
+function checkNotificationSupport() {
+  if (!("Notification" in window)) {
+    console.warn("此浏览器不支持桌面通知");
+    return false;
+  }
+  notificationPermission = Notification.permission;
+  console.log("通知权限状态:", notificationPermission);
+  return true;
+}
+
+// 请求通知权限
+async function requestNotificationPermission() {
+  if (!checkNotificationSupport()) {
+    return false;
+  }
+
+  if (notificationPermission === "granted") {
+    console.log("通知权限已授予");
+    return true;
+  }
+
+  if (notificationPermission === "denied") {
+    console.warn("通知权限被拒绝，无法发送桌面通知");
+    return false;
+  }
+
+  try {
+    const permission = await Notification.requestPermission();
+    notificationPermission = permission;
+    console.log("通知权限请求结果:", permission);
+    return permission === "granted";
+  } catch (error) {
+    console.error("请求通知权限失败:", error);
+    return false;
+  }
+}
+
+// 发送桌面通知
+function sendDesktopNotification(title, body, options = {}) {
+  if (notificationPermission !== "granted") {
+    console.warn("没有通知权限，无法发送桌面通知");
+    return null;
+  }
+
+  const defaultOptions = {
+    icon: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMzAiIGZpbGw9IiM2NjdlZWEiLz4KPHN2ZyB4PSIxNiIgeT0iMTYiIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJ3aGl0ZSI+CjxwYXRoIGQ9Ik0xMiAyQzYuNDggMiAyIDYuNDggMiAxMnM0LjQ4IDEwIDEwIDEwIDEwLTQuNDggMTAtMTBTMTcuNTIgMiAxMiAyem0tMiAxNWwtNS01aDNWOGgydjRoM2wtMyAzeiIvPgo8L3N2Zz4KPC9zdmc+", // 简单的SVG图标
+    badge:
+      "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTAiIGZpbGw9IiM2NjdlZWEiLz4KPC9zdmc+",
+    tag: "random-timer-notification",
+    requireInteraction: false, // 通知会自动消失
+    silent: false, // 允许通知音效
+  };
+
+  const notificationOptions = { ...defaultOptions, ...options };
+
+  try {
+    const notification = new Notification(title, {
+      body: body,
+      ...notificationOptions,
+    });
+
+    // 设置通知点击事件
+    notification.onclick = function () {
+      window.focus(); // 聚焦到浏览器窗口
+      notification.close();
+    };
+
+    // 自动关闭通知（5秒后）
+    setTimeout(() => {
+      notification.close();
+    }, 5000);
+
+    console.log("桌面通知已发送:", title);
+    return notification;
+  } catch (error) {
+    console.error("发送桌面通知失败:", error);
+    return null;
+  }
+}
+
 // 计时器ID存储变量
 let mainTimerId = null;
 let randomTimerId = null;
@@ -71,6 +155,11 @@ function formatMinuteSecond(minutes, seconds) {
 }
 
 function startTimers(isResuming = false, resumeData = null) {
+  // 如果是首次启动（不是恢复），请求通知权限
+  if (!isResuming) {
+    requestNotificationPermission();
+  }
+
   if (!isResuming) {
     console.log("主流程开始 (新启动)...");
     const mainDuration = 90 * 60 * 1000;
@@ -100,6 +189,14 @@ function startTimers(isResuming = false, resumeData = null) {
         console.log("主流程结束 - 时间到");
         soundC.play();
         mainTimerDisplay.innerHTML = "流程完成！";
+
+        // 发送主流程完成通知
+        sendDesktopNotification(
+          "🎉 专注训练完成！",
+          "90分钟的专注训练已圆满结束，恭喜您！",
+          { requireInteraction: true }
+        );
+
         appState.isAppRunning = false;
         clearAppStateFromLocalStorage();
         resetAllInternals(); // 只重置内部变量和UI，不重复清除localStorage
@@ -162,6 +259,24 @@ function startRandomIntervalTimer(isResuming = false, resumeTargetTime = null) {
     function (ts) {
       if (ts.value >= 0) {
         console.log(`随机间隔计时器 (ID: ${randomTimerId}) 结束。播放声音A。`);
+
+        // 计算这次专注的时长
+        const focusDurationMs =
+          Date.now() -
+          (appState.randomTargetEndTime - getRandomMillisecondsForCycle());
+        const focusMinutes = Math.floor(focusDurationMs / 60000);
+        const focusSeconds = Math.floor((focusDurationMs % 60000) / 1000);
+
+        // 发送桌面通知
+        sendDesktopNotification(
+          "⏰ 专注时间结束！",
+          `您已专注了 ${focusMinutes} 分 ${focusSeconds} 秒，现在开始10秒准备时间。`,
+          {
+            requireInteraction: false,
+            icon: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMzAiIGZpbGw9IiNmZjk1MDAiLz4KPHN2ZyB4PSIxNiIgeT0iMTYiIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJ3aGl0ZSI+CjxwYXRoIGQ9Ik0xMiAyQzYuNDggMiAyIDYuNDggMiAxMnM0LjQ4IDEwIDEwIDEwIDEwLTQuNDggMTAtMTBTMTcuNTIgMiAxMiAyem0wIDE4Yy00LjQxIDAtOC0zLjU5LTgtOHMzLjU5LTggOC04IDggMy41OSA4IDgtMy41OSA4LTggOHptMS0xM2gtMnY2bDUuMjUgMy4xNS43NS0xLjIzLTQuNS0yLjY3VjdoLTV6Ii8+Cjwvc3ZnPgo8L3N2Zz4=",
+          }
+        );
+
         soundA.currentTime = 0;
         soundA.play();
         randomTimerDisplay.innerHTML = "--:--";
@@ -393,5 +508,9 @@ resetButton.addEventListener("click", resetAll);
 
 document.addEventListener("DOMContentLoaded", function () {
   console.log("页面加载完成，尝试加载并恢复应用状态。");
+
+  // 检查桌面通知支持
+  checkNotificationSupport();
+
   loadAndResumeAppState();
 });
