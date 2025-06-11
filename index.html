@@ -49,6 +49,14 @@
         </svg>
         设置
       </button>
+      <button id="stats-button" class="stats-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2z"></path>
+          <path d="M19 19v-6a2 2 0 00-2-2h-2a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2z"></path>
+          <path d="M13 9v10a2 2 0 002 2h2a2 2 0 002-2V9a2 2 0 00-2-2h-2a2 2 0 00-2 2z"></path>
+        </svg>
+        统计
+      </button>
     </div>
   </div>
 
@@ -92,6 +100,126 @@
     </div>
   </div>
 
+  <!-- 统计模态框 -->
+  <div id="stats-modal" class="modal hidden">
+    <div class="modal-content stats-modal-content">
+      <div class="modal-header">
+        <h2>专注统计</h2>
+        <button class="close-button" id="close-stats">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- 统计标签页 -->
+        <div class="stats-tabs">
+          <button class="tab-button active" data-tab="daily">日统计</button>
+          <button class="tab-button" data-tab="weekly">周统计</button>
+          <button class="tab-button" data-tab="monthly">月统计</button>
+          <button class="tab-button" data-tab="achievements">成就</button>
+        </div>
+
+        <!-- 日统计内容 -->
+        <div class="tab-content active" id="daily-tab">
+          <div class="stats-summary">
+            <div class="stats-card">
+              <h4>今日专注时长</h4>
+              <span class="stats-value" id="today-duration">0分钟</span>
+            </div>
+            <div class="stats-card">
+              <h4>今日专注次数</h4>
+              <span class="stats-value" id="today-sessions">0次</span>
+            </div>
+            <div class="stats-card">
+              <h4>平均专注时长</h4>
+              <span class="stats-value" id="today-avg">0分钟</span>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="daily-chart"></canvas>
+          </div>
+        </div>
+
+        <!-- 周统计内容 -->
+        <div class="tab-content" id="weekly-tab">
+          <div class="stats-summary">
+            <div class="stats-card">
+              <h4>本周专注时长</h4>
+              <span class="stats-value" id="week-duration">0分钟</span>
+            </div>
+            <div class="stats-card">
+              <h4>本周专注次数</h4>
+              <span class="stats-value" id="week-sessions">0次</span>
+            </div>
+            <div class="stats-card">
+              <h4>日均专注时长</h4>
+              <span class="stats-value" id="week-avg">0分钟</span>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="weekly-chart"></canvas>
+          </div>
+        </div>
+
+        <!-- 月统计内容 -->
+        <div class="tab-content" id="monthly-tab">
+          <div class="stats-summary">
+            <div class="stats-card">
+              <h4>本月专注时长</h4>
+              <span class="stats-value" id="month-duration">0分钟</span>
+            </div>
+            <div class="stats-card">
+              <h4>本月专注次数</h4>
+              <span class="stats-value" id="month-sessions">0次</span>
+            </div>
+            <div class="stats-card">
+              <h4>日均专注时长</h4>
+              <span class="stats-value" id="month-avg">0分钟</span>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="monthly-chart"></canvas>
+          </div>
+          <div class="chart-container">
+            <h4>专注时段分布热力图</h4>
+            <canvas id="heatmap-chart"></canvas>
+          </div>
+        </div>
+
+        <!-- 成就系统内容 -->
+        <div class="tab-content" id="achievements-tab">
+          <div class="achievements-container">
+            <h4>解锁的成就</h4>
+            <div class="achievements-grid" id="achievements-list">
+              <!-- 成就项目将通过JavaScript动态生成 -->
+            </div>
+            <div class="achievement-progress">
+              <h4>成就进度</h4>
+              <div class="progress-list" id="achievement-progress-list">
+                <!-- 进度项目将通过JavaScript动态生成 -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="export-data" class="btn-secondary">导出数据</button>
+        <button id="reset-stats" class="btn-danger">重置统计</button>
+        <button id="close-stats-footer" class="btn-primary">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 成就解锁动画模态框 -->
+  <div id="achievement-modal" class="modal hidden">
+    <div class="modal-content achievement-modal-content">
+      <div class="achievement-animation">
+        <div class="achievement-icon">🏆</div>
+        <h3 id="achievement-title">成就解锁！</h3>
+        <p id="achievement-description">恭喜您解锁新成就</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 引入Chart.js库 -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
   <!-- 引入countdown.js库 -->
   <script src="https://cdn.jsdelivr.net/npm/countdown@2.6.0/countdown.min.js"></script>
   <!-- 引入本地脚本 -->

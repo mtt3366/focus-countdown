@@ -92,6 +92,7 @@ body {
     justify-content: center;
     gap: 20px;
     margin-top: 30px;
+    flex-wrap: wrap;
 }
 
 /* 按钮基础样式 */
@@ -204,6 +205,27 @@ button:disabled {
     height: 20px;
 }
 
+/* 统计按钮样式 */
+.stats-btn {
+    background: linear-gradient(135deg, #17a2b8, #138496);
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+}
+
+.stats-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #138496, #0f6674);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+}
+
+.stats-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
 /* 模态框样式 */
 .modal {
     position: fixed;
@@ -232,6 +254,12 @@ button:disabled {
     max-height: 90vh;
     overflow-y: auto;
     animation: modalSlideIn 0.3s ease-out;
+}
+
+/* 统计模态框特殊样式 */
+.stats-modal-content {
+    max-width: 1000px;
+    max-height: 90vh;
 }
 
 @keyframes modalSlideIn {
@@ -346,9 +374,10 @@ button:disabled {
     display: flex;
     justify-content: flex-end;
     gap: 15px;
+    flex-wrap: wrap;
 }
 
-.btn-primary, .btn-secondary {
+.btn-primary, .btn-secondary, .btn-danger {
     padding: 12px 24px;
     border: none;
     border-radius: 50px;
@@ -380,11 +409,305 @@ button:disabled {
     transform: translateY(-2px);
 }
 
+.btn-danger {
+    background: linear-gradient(135deg, #dc3545, #fd7e14);
+    color: white;
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, #c82333, #e8650e);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(220, 53, 69, 0.3);
+}
+
+/* 统计标签页样式 */
+.stats-tabs {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #e9ecef;
+    overflow-x: auto;
+}
+
+.tab-button {
+    padding: 12px 24px;
+    border: none;
+    background: transparent;
+    color: #6c757d;
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    min-width: auto;
+    box-shadow: none;
+    text-transform: none;
+    letter-spacing: normal;
+    border-radius: 0;
+}
+
+.tab-button.active {
+    color: #667eea;
+    border-bottom-color: #667eea;
+}
+
+.tab-button:hover {
+    color: #495057;
+    background: #f8f9fa;
+    transform: none;
+    box-shadow: none;
+}
+
+.tab-button.active:hover {
+    color: #667eea;
+}
+
+/* 标签页内容 */
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* 统计摘要样式 */
+.stats-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stats-card {
+    background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+    border-radius: 15px;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.stats-card:hover {
+    transform: translateY(-5px);
+}
+
+.stats-card h4 {
+    color: #6c757d;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.stats-value {
+    color: #2c3e50;
+    font-size: 2rem;
+    font-weight: 700;
+    display: block;
+}
+
+/* 图表容器 */
+.chart-container {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.chart-container h4 {
+    color: #2c3e50;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.chart-container canvas {
+    max-height: 400px;
+}
+
+/* 成就系统样式 */
+.achievements-container h4 {
+    color: #2c3e50;
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.achievements-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.achievement-item {
+    background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.achievement-item.unlocked {
+    background: linear-gradient(145deg, #ffeaa7, #fdcb6e);
+    box-shadow: 0 8px 20px rgba(253, 203, 110, 0.3);
+}
+
+.achievement-item.unlocked::before {
+    content: '✨';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 1.2rem;
+}
+
+.achievement-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.achievement-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.achievement-description {
+    font-size: 0.9rem;
+    color: #6c757d;
+    line-height: 1.4;
+}
+
+/* 成就进度样式 */
+.progress-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.progress-item {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.progress-name {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.progress-percentage {
+    font-weight: 600;
+    color: #667eea;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+.progress-description {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+/* 成就解锁动画模态框 */
+.achievement-modal-content {
+    max-width: 400px;
+    text-align: center;
+    background: linear-gradient(145deg, #ffeaa7, #fdcb6e);
+    border: none;
+}
+
+.achievement-animation {
+    padding: 40px;
+}
+
+.achievement-icon {
+    font-size: 5rem;
+    margin-bottom: 20px;
+    animation: bounceIn 0.8s ease-out;
+}
+
+@keyframes bounceIn {
+    0% {
+        transform: scale(0.3);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    70% {
+        transform: scale(0.9);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.achievement-animation h3 {
+    color: #2c3e50;
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+    animation: slideInUp 0.6s ease-out 0.2s both;
+}
+
+.achievement-animation p {
+    color: #495057;
+    font-size: 1.1rem;
+    animation: slideInUp 0.6s ease-out 0.4s both;
+}
+
+@keyframes slideInUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
 /* 响应式设计更新 */
 @media (max-width: 768px) {
     .modal-content {
         width: 95%;
         margin: 20px;
+    }
+    
+    .stats-modal-content {
+        max-width: 95%;
     }
     
     .modal-header h2 {
@@ -393,5 +716,54 @@ button:disabled {
     
     .setting-group input[type="number"] {
         padding: 10px 14px;
+    }
+    
+    .stats-tabs {
+        gap: 2px;
+    }
+    
+    .tab-button {
+        padding: 10px 16px;
+        font-size: 0.9rem;
+    }
+    
+    .stats-summary {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .stats-card {
+        padding: 20px;
+    }
+    
+    .stats-value {
+        font-size: 1.5rem;
+    }
+    
+    .achievements-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .achievement-item {
+        padding: 15px;
+    }
+    
+    .modal-footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .btn-primary, .btn-secondary, .btn-danger {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    
+    .chart-container {
+        padding: 15px;
+    }
+    
+    .chart-container canvas {
+        max-height: 300px;
     }
 } 
