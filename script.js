@@ -8,6 +8,31 @@ const tenSecondTimerCard = document.getElementById("ten-second-timer-card");
 const startButton = document.getElementById("start-button");
 const resetButton = document.getElementById("reset-button");
 
+// 设置相关的DOM元素
+const settingsButton = document.getElementById("settings-button");
+const settingsModal = document.getElementById("settings-modal");
+const closeSettingsButton = document.getElementById("close-settings");
+const saveSettingsButton = document.getElementById("save-settings");
+const cancelSettingsButton = document.getElementById("cancel-settings");
+const mainDurationInput = document.getElementById("main-duration");
+const randomMinInput = document.getElementById("random-min");
+const randomMaxInput = document.getElementById("random-max");
+const restDurationInput = document.getElementById("rest-duration");
+
+// 设置配置的键名
+const SETTINGS_KEY = "randomTimerSettings";
+
+// 默认设置值
+const defaultSettings = {
+  mainDuration: 90,      // 主流程时间（分钟）
+  randomMin: 3,          // 随机间隔最小时间（分钟）
+  randomMax: 5,          // 随机间隔最大时间（分钟）
+  restDuration: 10       // 休息时间（秒）
+};
+
+// 当前设置（初始化为默认值，稍后会从localStorage加载）
+let currentSettings = { ...defaultSettings };
+
 // 音频资源初始化
 const soundA = new Audio("sounds/soundA.mp3");
 soundA.preload = "auto"; // 提示浏览器预加载音频
@@ -143,9 +168,11 @@ function pad(num) {
   return num.toString().padStart(2, "0");
 }
 
-// 工具函数：获取3-5分钟的随机时间（毫秒）
+// 工具函数：根据设置获取随机时间（毫秒）
 function getRandomMillisecondsForCycle() {
-  const randomMinutes = Math.random() * 2 + 3; // 3-5 分钟
+  const minMinutes = currentSettings.randomMin;
+  const maxMinutes = currentSettings.randomMax;
+  const randomMinutes = Math.random() * (maxMinutes - minMinutes) + minMinutes;
   return Math.floor(randomMinutes * 60 * 1000); // 转换为毫秒
 }
 
@@ -162,7 +189,7 @@ function startTimers(isResuming = false, resumeData = null) {
 
   if (!isResuming) {
     console.log("主流程开始 (新启动)...");
-    const mainDuration = 90 * 60 * 1000;
+    const mainDuration = currentSettings.mainDuration * 60 * 1000; // 使用设置中的主流程时间
     appState.mainTargetEndTime = Date.now() + mainDuration;
     appState.isAppRunning = true;
     appState.currentCyclePhase = null; // 初始时没有子循环
@@ -193,13 +220,13 @@ function startTimers(isResuming = false, resumeData = null) {
         // 发送主流程完成通知
         sendDesktopNotification(
           "🎉 专注训练完成！",
-          "90分钟的专注训练已圆满结束，恭喜您！",
+          `${currentSettings.mainDuration}分钟的专注训练已圆满结束，恭喜您！`,
           { requireInteraction: true }
         );
 
         appState.isAppRunning = false;
         clearAppStateFromLocalStorage();
-        resetAllInternals(); // 只重置内部变量和UI，不重复清除localStorage
+        resetAllInternals(true); // 只重置内部变量和UI，不重复清除localStorage
         return;
       }
       const totalMinutes = ts.hours * 60 + ts.minutes;
@@ -268,7 +295,7 @@ function startRandomIntervalTimer(isResuming = false, resumeTargetTime = null) {
         const focusSeconds = Math.floor((focusDurationMs % 60000) / 1000);
 
         // 发送桌面通知
-        sendDesktopNotification("⏰ 间隔", `放空10秒`, {
+        sendDesktopNotification("⏰ 间隔", `放空${currentSettings.restDuration}秒`, {
           requireInteraction: false,
           icon: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMzAiIGZpbGw9IiNmZjk1MDAiLz4KPHN2ZyB4PSIxNiIgeT0iMTYiIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJ3aGl0ZSI+CjxwYXRoIGQ9Ik0xMiAyQzYuNDggMiAyIDYuNDggMiAxMnM0LjQ4IDEwIDEwIDEwIDEwLTQuNDggMTAtMTBTMTcuNTIgMiAxMiAyem0wIDE4Yy00LjQxIDAtOC0zLjU5LTgtOHMzLjU5LTggOC04IDggMy41OSA4IDgtMy41OSA4LTggOHptMS0xM2gtMnY2bDUuMjUgMy4xNS43NS0xLjIzLTQuNS0yLjY3VjdoLTV6Ii8+Cjwvc3ZnPgo8L3N2Zz4=",
         });
@@ -313,9 +340,9 @@ function startTenSecondPrepTimer(isResuming = false, resumeTargetTime = null) {
       ).toLocaleTimeString()})`
     );
   } else {
-    appState.tenSecondTargetEndTime = Date.now() + 10 * 1000;
+    appState.tenSecondTargetEndTime = Date.now() + currentSettings.restDuration * 1000; // 使用设置中的休息时间
     console.log(
-      `启动10秒准备计时器 (将结束于: ${new Date(
+      `启动${currentSettings.restDuration}秒准备计时器 (将结束于: ${new Date(
         appState.tenSecondTargetEndTime
       ).toLocaleTimeString()})`
     );
@@ -338,7 +365,7 @@ function startTenSecondPrepTimer(isResuming = false, resumeTargetTime = null) {
         );
         soundB.play();
         tenSecondTimerCard.classList.add("hidden");
-        tenSecondTimerDisplay.innerHTML = "10";
+        tenSecondTimerDisplay.innerHTML = currentSettings.restDuration.toString();
         if (tenSecondTimerId) {
           clearInterval(tenSecondTimerId);
           tenSecondTimerId = null;
@@ -357,6 +384,7 @@ function startTenSecondPrepTimer(isResuming = false, resumeTargetTime = null) {
 }
 
 function resetAllInternals(updateUI = true) {
+  // 清除所有计时器
   if (mainTimerId) {
     clearInterval(mainTimerId);
     mainTimerId = null;
@@ -370,26 +398,31 @@ function resetAllInternals(updateUI = true) {
     tenSecondTimerId = null;
   }
 
+  // 重置应用状态
   appState.mainTargetEndTime = null;
   appState.randomTargetEndTime = null;
   appState.tenSecondTargetEndTime = null;
   appState.currentCyclePhase = null;
   appState.isAppRunning = false;
 
+  // 停止并重置音频
   soundA.pause();
   soundA.currentTime = 0;
   soundB.pause();
   soundB.currentTime = 0;
   // soundC is handled by its own end or if main timer is cleared elsewhere
 
+  // 更新UI显示
   if (updateUI) {
-    mainTimerDisplay.innerHTML = "90:00";
+    // 使用设置中的值更新显示
+    mainTimerDisplay.innerHTML = formatMinuteSecond(currentSettings.mainDuration, 0);
     randomTimerDisplay.innerHTML = "--:--";
-    tenSecondTimerDisplay.innerHTML = "10";
+    tenSecondTimerDisplay.innerHTML = currentSettings.restDuration.toString();
     if (tenSecondTimerCard) tenSecondTimerCard.classList.add("hidden");
     startButton.disabled = false;
     resetButton.disabled = true;
   }
+  
   console.log("内部状态和计时器已重置。");
 }
 
@@ -498,15 +531,136 @@ function loadAndResumeAppState() {
   saveAppStateToLocalStorage();
 }
 
+// --- 设置相关函数 ---
+// 保存设置到localStorage
+function saveSettings() {
+  try {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(currentSettings));
+    console.log("设置已保存:", currentSettings);
+  } catch (e) {
+    console.error("保存设置失败:", e);
+  }
+}
+
+// 从localStorage加载设置
+function loadSettings() {
+  try {
+    const savedSettings = localStorage.getItem(SETTINGS_KEY);
+    if (savedSettings) {
+      const parsedSettings = JSON.parse(savedSettings);
+      currentSettings = { ...defaultSettings, ...parsedSettings };
+      console.log("已加载保存的设置:", currentSettings);
+    } else {
+      console.log("使用默认设置");
+    }
+  } catch (e) {
+    console.error("加载设置失败:", e);
+    currentSettings = { ...defaultSettings };
+  }
+}
+
+// 打开设置模态框
+function openSettingsModal() {
+  // 将当前设置值填充到输入框
+  mainDurationInput.value = currentSettings.mainDuration;
+  randomMinInput.value = currentSettings.randomMin;
+  randomMaxInput.value = currentSettings.randomMax;
+  restDurationInput.value = currentSettings.restDuration;
+  
+  // 显示模态框
+  settingsModal.classList.remove("hidden");
+}
+
+// 关闭设置模态框
+function closeSettingsModal() {
+  settingsModal.classList.add("hidden");
+}
+
+// 保存设置并关闭模态框
+function saveAndCloseSettings() {
+  // 获取输入值
+  const mainDuration = parseFloat(mainDurationInput.value);
+  const randomMin = parseFloat(randomMinInput.value);
+  const randomMax = parseFloat(randomMaxInput.value);
+  const restDuration = parseInt(restDurationInput.value);
+  
+  // 验证输入
+  if (mainDuration < 1 || mainDuration > 180) {
+    alert("主流程时间必须在1-180分钟之间");
+    return;
+  }
+  
+  if (randomMin < 1 || randomMin > 30 || randomMax < 1 || randomMax > 30) {
+    alert("随机间隔时间必须在1-30分钟之间");
+    return;
+  }
+  
+  if (randomMin > randomMax) {
+    alert("最小间隔时间不能大于最大间隔时间");
+    return;
+  }
+  
+  if (restDuration < 5 || restDuration > 60) {
+    alert("休息时间必须在5-60秒之间");
+    return;
+  }
+  
+  // 更新设置
+  currentSettings = {
+    mainDuration,
+    randomMin,
+    randomMax,
+    restDuration
+  };
+  
+  // 保存设置
+  saveSettings();
+  
+  // 如果当前没有运行计时器，更新显示
+  if (!appState.isAppRunning) {
+    mainTimerDisplay.innerHTML = formatMinuteSecond(currentSettings.mainDuration, 0);
+    tenSecondTimerDisplay.innerHTML = currentSettings.restDuration.toString();
+  }
+  
+  // 关闭模态框
+  closeSettingsModal();
+  
+  console.log("设置已更新:", currentSettings);
+}
+
 // --- 事件监听器 ---
 startButton.addEventListener("click", () => startTimers(false));
 resetButton.addEventListener("click", resetAll);
+
+// 设置相关的事件监听器
+settingsButton.addEventListener("click", openSettingsModal);
+closeSettingsButton.addEventListener("click", closeSettingsModal);
+cancelSettingsButton.addEventListener("click", closeSettingsModal);
+saveSettingsButton.addEventListener("click", saveAndCloseSettings);
+
+// 点击模态框外部关闭
+settingsModal.addEventListener("click", function(e) {
+  if (e.target === settingsModal) {
+    closeSettingsModal();
+  }
+});
+
+// ESC键关闭模态框
+document.addEventListener("keydown", function(e) {
+  if (e.key === "Escape" && !settingsModal.classList.contains("hidden")) {
+    closeSettingsModal();
+  }
+});
 
 document.addEventListener("DOMContentLoaded", function () {
   console.log("页面加载完成，尝试加载并恢复应用状态。");
 
   // 检查桌面通知支持
   checkNotificationSupport();
+  
+  // 加载保存的设置
+  loadSettings();
 
+  // 加载并恢复应用状态
   loadAndResumeAppState();
 });

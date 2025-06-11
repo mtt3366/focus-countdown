@@ -42,6 +42,53 @@
     <div class="controls-container">
       <button id="start-button">开始</button>
       <button id="reset-button" disabled>重置</button>
+      <button id="settings-button" class="settings-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M12 1v6m0 6v6m4.22-10.22l4.24-4.24M6.34 17.66l4.24 4.24M1 12h6m6 0h6m-10.22 4.22l-4.24 4.24M17.66 6.34l4.24-4.24"></path>
+        </svg>
+        设置
+      </button>
+    </div>
+  </div>
+
+  <!-- 设置模态框 -->
+  <div id="settings-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>设置</h2>
+        <button class="close-button" id="close-settings">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- 主流程时间设置 -->
+        <div class="setting-group">
+          <label for="main-duration">主流程时间（分钟）：</label>
+          <input type="number" id="main-duration" min="1" max="180" value="90">
+          <span class="setting-description">设置主流程的总时长</span>
+        </div>
+
+        <!-- 随机间隔时间设置 -->
+        <div class="setting-group">
+          <label>随机间隔时间区间（分钟）：</label>
+          <div class="range-inputs">
+            <input type="number" id="random-min" min="1" max="30" value="3" step="0.5">
+            <span>至</span>
+            <input type="number" id="random-max" min="1" max="30" value="5" step="0.5">
+          </div>
+          <span class="setting-description">设置随机间隔的时间范围</span>
+        </div>
+
+        <!-- 休息时间设置 -->
+        <div class="setting-group">
+          <label for="rest-duration">休息时间（秒）：</label>
+          <input type="number" id="rest-duration" min="5" max="60" value="10">
+          <span class="setting-description">设置每次间隔后的休息时长</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="save-settings" class="btn-primary">保存</button>
+        <button id="cancel-settings" class="btn-secondary">取消</button>
+      </div>
     </div>
   </div>
 
