@@ -24,10 +24,10 @@ const SETTINGS_KEY = "randomTimerSettings";
 
 // 默认设置值
 const defaultSettings = {
-  mainDuration: 90,      // 主流程时间（分钟）
-  randomMin: 3,          // 随机间隔最小时间（分钟）
-  randomMax: 5,          // 随机间隔最大时间（分钟）
-  restDuration: 10       // 休息时间（秒）
+  mainDuration: 90, // 主流程时间（分钟）
+  randomMin: 3, // 随机间隔最小时间（分钟）
+  randomMax: 5, // 随机间隔最大时间（分钟）
+  restDuration: 10, // 休息时间（秒）
 };
 
 // 当前设置（初始化为默认值，稍后会从localStorage加载）
@@ -43,21 +43,32 @@ soundC.preload = "auto"; // 提示浏览器预加载音频
 
 // 桌面通知功能
 let notificationPermission = "default";
+let notificationSupported = false;
 
 // 检查浏览器是否支持通知
 function checkNotificationSupport() {
-  if (!("Notification" in window)) {
+  notificationSupported = "Notification" in window;
+  if (!notificationSupported) {
     console.warn("此浏览器不支持桌面通知");
     return false;
   }
+
+  // 更新权限状态
   notificationPermission = Notification.permission;
   console.log("通知权限状态:", notificationPermission);
+
+  // 如果权限是默认状态，主动请求权限
+  if (notificationPermission === "default") {
+    requestNotificationPermission();
+  }
+
   return true;
 }
 
 // 请求通知权限
 async function requestNotificationPermission() {
-  if (!checkNotificationSupport()) {
+  if (!notificationSupported) {
+    console.warn("此浏览器不支持桌面通知");
     return false;
   }
 
@@ -68,6 +79,10 @@ async function requestNotificationPermission() {
 
   if (notificationPermission === "denied") {
     console.warn("通知权限被拒绝，无法发送桌面通知");
+    // 显示权限被拒绝的提示
+    alert(
+      "通知权限已被拒绝。要启用通知，请：\n1. 点击地址栏左侧的锁定图标\n2. 在权限设置中找到'通知'\n3. 将通知权限改为'允许'"
+    );
     return false;
   }
 
@@ -75,6 +90,13 @@ async function requestNotificationPermission() {
     const permission = await Notification.requestPermission();
     notificationPermission = permission;
     console.log("通知权限请求结果:", permission);
+
+    if (permission === "denied") {
+      alert(
+        "通知权限被拒绝。要启用通知，请：\n1. 点击地址栏左侧的锁定图标\n2. 在权限设置中找到'通知'\n3. 将通知权限改为'允许'"
+      );
+    }
+
     return permission === "granted";
   } catch (error) {
     console.error("请求通知权限失败:", error);
@@ -84,18 +106,20 @@ async function requestNotificationPermission() {
 
 // 发送桌面通知
 function sendDesktopNotification(title, body, options = {}) {
-  if (notificationPermission !== "granted") {
-    console.warn("没有通知权限，无法发送桌面通知");
+  // 如果不支持通知或没有权限，尝试使用alert作为降级方案
+  if (!notificationSupported || notificationPermission !== "granted") {
+    console.warn("无法发送桌面通知，使用alert作为降级方案");
+    alert(`${title}\n${body}`);
     return null;
   }
 
   const defaultOptions = {
-    icon: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMzAiIGZpbGw9IiM2NjdlZWEiLz4KPHN2ZyB4PSIxNiIgeT0iMTYiIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJ3aGl0ZSI+CjxwYXRoIGQ9Ik0xMiAyQzYuNDggMiAyIDYuNDggMiAxMnM0LjQ4IDEwIDEwIDEwIDEwLTQuNDggMTAtMTBTMTcuNTIgMiAxMiAyem0tMiAxNWwtNS01aDNWOGgydjRoM2wtMyAzeiIvPgo8L3N2Zz4KPC9zdmc+", // 简单的SVG图标
+    icon: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMzAiIGZpbGw9IiM2NjdlZWEiLz4KPHN2ZyB4PSIxNiIgeT0iMTYiIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJ3aGl0ZSI+CjxwYXRoIGQ9Ik0xMiAyQzYuNDggMiAyIDYuNDggMiAxMnM0LjQ4IDEwIDEwIDEwIDEwLTQuNDggMTAtMTBTMTcuNTIgMiAxMiAyem0tMiAxNWwtNS01aDNWOGgydjRoM2wtMyAzeiIvPgo8L3N2Zz4KPC9zdmc+",
     badge:
       "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTAiIGZpbGw9IiM2NjdlZWEiLz4KPC9zdmc+",
     tag: "random-timer-notification",
-    requireInteraction: false, // 通知会自动消失
-    silent: false, // 允许通知音效
+    requireInteraction: false,
+    silent: false,
   };
 
   const notificationOptions = { ...defaultOptions, ...options };
@@ -108,7 +132,7 @@ function sendDesktopNotification(title, body, options = {}) {
 
     // 设置通知点击事件
     notification.onclick = function () {
-      window.focus(); // 聚焦到浏览器窗口
+      window.focus();
       notification.close();
     };
 
@@ -121,6 +145,8 @@ function sendDesktopNotification(title, body, options = {}) {
     return notification;
   } catch (error) {
     console.error("发送桌面通知失败:", error);
+    // 发送失败时使用alert作为降级方案
+    alert(`${title}\n${body}`);
     return null;
   }
 }
@@ -295,10 +321,14 @@ function startRandomIntervalTimer(isResuming = false, resumeTargetTime = null) {
         const focusSeconds = Math.floor((focusDurationMs % 60000) / 1000);
 
         // 发送桌面通知
-        sendDesktopNotification("⏰ 间隔", `放空${currentSettings.restDuration}秒`, {
-          requireInteraction: false,
-          icon: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMzAiIGZpbGw9IiNmZjk1MDAiLz4KPHN2ZyB4PSIxNiIgeT0iMTYiIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJ3aGl0ZSI+CjxwYXRoIGQ9Ik0xMiAyQzYuNDggMiAyIDYuNDggMiAxMnM0LjQ4IDEwIDEwIDEwIDEwLTQuNDggMTAtMTBTMTcuNTIgMiAxMiAyem0wIDE4Yy00LjQxIDAtOC0zLjU5LTgtOHMzLjU5LTggOC04IDggMy41OSA4IDgtMy41OSA4LTggOHptMS0xM2gtMnY2bDUuMjUgMy4xNS43NS0xLjIzLTQuNS0yLjY3VjdoLTV6Ii8+Cjwvc3ZnPgo8L3N2Zz4=",
-        });
+        sendDesktopNotification(
+          "⏰ 间隔",
+          `放空${currentSettings.restDuration}秒`,
+          {
+            requireInteraction: false,
+            icon: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMzAiIGZpbGw9IiNmZjk1MDAiLz4KPHN2ZyB4PSIxNiIgeT0iMTYiIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJ3aGl0ZSI+CjxwYXRoIGQ9Ik0xMiAyQzYuNDggMiAyIDYuNDggMiAxMnM0LjQ4IDEwIDEwIDEwIDEwLTQuNDggMTAtMTBTMTcuNTIgMiAxMiAyem0wIDE4Yy00LjQxIDAtOC0zLjU5LTgtOHMzLjU5LTggOC04IDggMy41OSA4IDgtMy41OSA4LTggOHptMS0xM2gtMnY2bDUuMjUgMy4xNS43NS0xLjIzLTQuNS0yLjY3VjdoLTV6Ii8+Cjwvc3ZnPgo8L3N2Zz4=",
+          }
+        );
 
         soundA.currentTime = 0;
         soundA.play();
@@ -340,7 +370,8 @@ function startTenSecondPrepTimer(isResuming = false, resumeTargetTime = null) {
       ).toLocaleTimeString()})`
     );
   } else {
-    appState.tenSecondTargetEndTime = Date.now() + currentSettings.restDuration * 1000; // 使用设置中的休息时间
+    appState.tenSecondTargetEndTime =
+      Date.now() + currentSettings.restDuration * 1000; // 使用设置中的休息时间
     console.log(
       `启动${currentSettings.restDuration}秒准备计时器 (将结束于: ${new Date(
         appState.tenSecondTargetEndTime
@@ -365,7 +396,8 @@ function startTenSecondPrepTimer(isResuming = false, resumeTargetTime = null) {
         );
         soundB.play();
         tenSecondTimerCard.classList.add("hidden");
-        tenSecondTimerDisplay.innerHTML = currentSettings.restDuration.toString();
+        tenSecondTimerDisplay.innerHTML =
+          currentSettings.restDuration.toString();
         if (tenSecondTimerId) {
           clearInterval(tenSecondTimerId);
           tenSecondTimerId = null;
@@ -415,14 +447,17 @@ function resetAllInternals(updateUI = true) {
   // 更新UI显示
   if (updateUI) {
     // 使用设置中的值更新显示
-    mainTimerDisplay.innerHTML = formatMinuteSecond(currentSettings.mainDuration, 0);
+    mainTimerDisplay.innerHTML = formatMinuteSecond(
+      currentSettings.mainDuration,
+      0
+    );
     randomTimerDisplay.innerHTML = "--:--";
     tenSecondTimerDisplay.innerHTML = currentSettings.restDuration.toString();
     if (tenSecondTimerCard) tenSecondTimerCard.classList.add("hidden");
     startButton.disabled = false;
     resetButton.disabled = true;
   }
-  
+
   console.log("内部状态和计时器已重置。");
 }
 
@@ -566,7 +601,7 @@ function openSettingsModal() {
   randomMinInput.value = currentSettings.randomMin;
   randomMaxInput.value = currentSettings.randomMax;
   restDurationInput.value = currentSettings.restDuration;
-  
+
   // 显示模态框
   settingsModal.classList.remove("hidden");
 }
@@ -583,48 +618,51 @@ function saveAndCloseSettings() {
   const randomMin = parseFloat(randomMinInput.value);
   const randomMax = parseFloat(randomMaxInput.value);
   const restDuration = parseInt(restDurationInput.value);
-  
+
   // 验证输入
   if (mainDuration < 1 || mainDuration > 180) {
     alert("主流程时间必须在1-180分钟之间");
     return;
   }
-  
+
   if (randomMin < 1 || randomMin > 30 || randomMax < 1 || randomMax > 30) {
     alert("随机间隔时间必须在1-30分钟之间");
     return;
   }
-  
+
   if (randomMin > randomMax) {
     alert("最小间隔时间不能大于最大间隔时间");
     return;
   }
-  
+
   if (restDuration < 5 || restDuration > 60) {
     alert("休息时间必须在5-60秒之间");
     return;
   }
-  
+
   // 更新设置
   currentSettings = {
     mainDuration,
     randomMin,
     randomMax,
-    restDuration
+    restDuration,
   };
-  
+
   // 保存设置
   saveSettings();
-  
+
   // 如果当前没有运行计时器，更新显示
   if (!appState.isAppRunning) {
-    mainTimerDisplay.innerHTML = formatMinuteSecond(currentSettings.mainDuration, 0);
+    mainTimerDisplay.innerHTML = formatMinuteSecond(
+      currentSettings.mainDuration,
+      0
+    );
     tenSecondTimerDisplay.innerHTML = currentSettings.restDuration.toString();
   }
-  
+
   // 关闭模态框
   closeSettingsModal();
-  
+
   console.log("设置已更新:", currentSettings);
 }
 
@@ -639,14 +677,14 @@ cancelSettingsButton.addEventListener("click", closeSettingsModal);
 saveSettingsButton.addEventListener("click", saveAndCloseSettings);
 
 // 点击模态框外部关闭
-settingsModal.addEventListener("click", function(e) {
+settingsModal.addEventListener("click", function (e) {
   if (e.target === settingsModal) {
     closeSettingsModal();
   }
 });
 
 // ESC键关闭模态框
-document.addEventListener("keydown", function(e) {
+document.addEventListener("keydown", function (e) {
   if (e.key === "Escape" && !settingsModal.classList.contains("hidden")) {
     closeSettingsModal();
   }
@@ -655,9 +693,9 @@ document.addEventListener("keydown", function(e) {
 document.addEventListener("DOMContentLoaded", function () {
   console.log("页面加载完成，尝试加载并恢复应用状态。");
 
-  // 检查桌面通知支持
+  // 检查通知支持并初始化
   checkNotificationSupport();
-  
+
   // 加载保存的设置
   loadSettings();
 
